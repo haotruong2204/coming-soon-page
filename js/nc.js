@@ -446,7 +446,7 @@
 		msg: {
 			email: { email: "Please, enter a valid email" }
 		},
-		subscribe_successMsg: "You are in list. We will inform you as soon as we finish.",
+		subscribe_successMsg: "Cảm ơn bạn đã quan tâm, mình sẽ phản hồi lại với bạn sớm nhất",
 		form_successMsg: "Thank you for contact us. We will contact you as soon as possible.",
 
 		successMsg: "",
@@ -500,43 +500,39 @@
 		var timer = 4000;
 
 		if ($form.valid()) {
+			var unindexed_array = $('.data-input').map(function() {
+				return {
+					code: $(this).attr('code'), value : $(this).val()
+				}
+			}).get();
+			var indexed_array = {};
+			$.map(unindexed_array, function(n, i){
+				indexed_array[n['code']] = n['value'];
+			});
+			
+			// console.log(unindexed_array)
+
 			$.ajax({
 				url: $form.attr('action'),
 				type: 'POST',
-				data: formData,
-				success: function (data) {
-					if (data.status == 'error') {
-						// Email subscription error messages
-						swal("Error!", data.type, "error");
-						$btn.button('reset');
-						nc.resetForm($form);
-					} else {
-						//swal("Success!", validate_data.successMsg, "success");
-						swal({
-							type: "success",
-							title: "Success!",
-							text: validate_data.successMsg,
-							timer: timer
-						}, function () {
-							if ($form.attr('data-success-redirect') === 'y') {
-								window.location = nc.config.success_url;
-							}
-						});
-
-						$btn.button('reset');
-						$.magnificPopup.close();
-						nc.resetForm($form);
-
-						setTimeout(function () { swal.close(); }, timer);
-					};
-				},
-				error: function () {
-					swal("Error!", validate_data.errorMsg, "error");
-					$btn.button('reset');
-					$.magnificPopup.close();
-					setTimeout(function () { swal.close(); }, timer);
-				}
+				data: indexed_array,
+				dataType:'jsonp',
 			});
+
+			swal({
+				type: "success",
+				title: "Success!",
+				text: validate_data.successMsg,
+				timer: timer
+			}, function () {
+				window.location = "/";
+			});
+
+			$btn.button('reset');
+			$.magnificPopup.close();
+			nc.resetForm($form);
+
+			setTimeout(function () { swal.close(); }, timer);
 		} else {
 			$form.find("label.error").delay(timer).fadeOut('400', function () {
 				$(this).remove();
